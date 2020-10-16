@@ -1,52 +1,47 @@
 #!/bin/bash
 
-###Remvoing old and creating folder that will contain the fastqc result
+#Remvoing old and creating folder that will contain the fastqc result
 #No need to remove for Al, he wouldn't have it to begin with 
 rm -r fastqc.result
 mkdir fastqc.result
 
-###Running fastqc, --extract to unzip the files and -q for no message output
-echo "*****Currently running fastqc on all raw sequence files, please wait a few moments*****" ##change here to create fastqc.result in home directory####
+#Running fastqc, results are saved in the 'fastqc.result' directory in home directory
+echo "*****Currently running fastqc on all raw sequence files, please wait..." 
 fastqc --extract -q -o ~/workdraft/fastqc.result /localdisk/data/BPSM/Assignment1/fastq/*.fq.gz 
 
-###Moves basic summary.txt files of all rae sequences into one text file 
-###The text file is moved into fastqc.result directory to prevent overcrowding the working directory 
-##change here to access fastqc.result file in home directory## 
-cat  ~/workdraft/fastqc.result/*fastqc/summary.txt  > summary.list
-mv summary.list ~/workdraft/fastqc.result
+#Combines summary.txt of all raw sequences into one list
+cat  ~/workdraft/fastqc.result/*fastqc/summary.txt  > ~/workdraft/fastqc.result/summary.list
 
 #########################
-#########################
 
-echo "*****Quick summary of the quality test for raw sequences*****"
-echo "*****For more detailed information of each sequence file, look at fastqc.result directory in your home directory*****"
+echo "*****Quick summary of quality assessment. Analysis modules that raised a warning or failure are shown below. For more information on the quality, please look at 'fastqc.result' directory in your home directory"
 
-#Print to the screen if some features scored low in quality assessment 
+#Prints analysis mododules that raised a warning or failure onto the screen
 IFS=$'\t'
 while read score feature filename
 do
 if test $score == "FAIL"
   then 
-    echo -e "${filename} has failed the quality assessment  ${feature}"
+    echo -e "${filename}: \t${feature} module has issued a failure"
   elif test $score == "WARN"
   then
-    echo -e "${filename} has been warned for the quality assessment  ${feature}"
+    echo -e "${filename}: \t${feature} module has issued a warning"
   else
     continue 
 fi
 done < ~/workdraft/fastqc.result/summary.list  ##change here to home directory
 
 #Asks user if he/she wants to continue to alignment after assessing the quality 
-read -p "Would you like to continue (y/n)?" answer
-if $answer == "y"
-  then 
-   echo "Moving onto the alignment now"
-   else
-    kill
+#If answer is 'y' program continues 
+#If answer is 'n' it exits the shell script and returns to the terminal 
+echo -n "Would you like to continue (y/n)?"
+read answer
+if [ "$answer" != "${answer#[Yy]}" ] 
+then
+  echo "Moving onto the alignment now"
+else
+  exit 0
 fi
-  
-    
-
 
 
 
